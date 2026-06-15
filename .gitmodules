@@ -1,0 +1,12 @@
+[submodule "spikformer"]
+	path = spikformer
+	url = git@github.com:jikerWRN/spikformer.git
+[submodule "MaxFormer"]
+	path = MaxFormer
+	url = git@github.com:jikerWRN/MaxFormer.git
+[submodule "QKFormer"]
+	path = QKFormer
+	url = git@github.com:jikerWRN/QKFormer.git
+[submodule "Spikingformer"]
+	path = Spikingformer
+	url = git@github.com:jikerWRN/Spikingformer.git
