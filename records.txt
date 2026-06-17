@@ -1,0 +1,24 @@
+bash eval_cifar10_checkpoint.sh /home/wangyufei/code/SNNTransformer/checkpoints/Spikingformer-4-384-400E/checkpoint-405.pth.tar /home/wangyufei/dataset/cifar-10-batc
+hes-py cuda:0 
+Traceback (most recent call last):
+  File "/home/wangyufei/code/SNNTransformer/Spikingformer/cifar10/eval_checkpoint.py", line 9, in <module>
+    from timm.models import create_model
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/__init__.py", line 2, in <module>
+    from .models import create_model, list_models, is_model, list_modules, model_entrypoint, \
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/__init__.py", line 28, in <module>
+    from .maxxvit import *
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/maxxvit.py", line 225, in <module>
+    @dataclass
+     ^^^^^^^^^
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/dataclasses.py", line 1275, in dataclass
+    return wrap(cls)
+           ^^^^^^^^^
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/dataclasses.py", line 1265, in wrap
+    return _process_class(cls, init, repr, eq, order, unsafe_hash,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/dataclasses.py", line 994, in _process_class
+    cls_fields.append(_get_field(cls, name, type, kw_only))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/dataclasses.py", line 852, in _get_field
+    raise ValueError(f'mutable default {type(f.default)} for field '
+ValueError: mutable default <class 'timm.models.maxxvit.MaxxVitConvCfg'> for field conv_cfg is not allowed: use default_factory
