@@ -1,16 +1,5 @@
-python cifar10/model.py                                                                                                                                           (torch) 
-/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
-  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
-/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/registry.py:4: FutureWarning: Importing from timm.models.registry is deprecated, please import via timm.models
-  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.models", FutureWarning)
+python cifar10/train.py                                                                                       (torch) 
 Traceback (most recent call last):
-  File "/home/wangyufei/code/SNNTransformer/Spikingformer/cifar10/model.py", line 247, in <module>
-    model = create_model(
-            ^^^^^^^^^^^^^
-  File "/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/_factory.py", line 138, in create_model
-    model = create_fn(
-            ^^^^^^^^^^
-  File "/home/wangyufei/code/SNNTransformer/Spikingformer/cifar10/model.py", line 238, in Spikingformer
-    model = vit_snn(
-            ^^^^^^^^
-TypeError: vit_snn.__init__() got an unexpected keyword argument 'cache_dir'
+  File "/home/wangyufei/code/SNNTransformer/Spikingformer/cifar10/train.py", line 35, in <module>
+    from timm.models import create_model, safe_model_name, resume_checkpoint, load_checkpoint, \
+ImportError: cannot import name 'convert_splitbn_model' from 'timm.models' (/home/wangyufei/anaconda3/envs/torch/lib/python3.12/site-packages/timm/models/__init__.py)
