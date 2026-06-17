@@ -1,0 +1,84 @@
+SNN Transformer 模型对比
+
+参考文件：
+- MaxFormer/cifar10-100/max_former.py
+- QKFormer/cifar10/model.py
+- spikformer/cifar10/model.py
+- Spikingformer/cifar10/model.py
+
+一、共同点
+
+这四个模型都是基于 Transformer 架构的 Spiking Neural Network。它们都将输入图像扩展为带时间维的脉冲张量：
+
+    x = x.unsqueeze(0).repeat(T, 1, 1, 1, 1)
+
+因此主要特征张量通常包含时间步 T。四者都使用 SpikingJelly 中的 MultiStepLIFNode 作为脉冲神经元，常见参数包括 tau=2.0、detach_reset=True 和 backend='cupy'。分类阶段一般会对时间维求平均，再送入线性分类头：
+
+    x = self.head(x.mean(0))
+
+从整体结构看，它们都包含 Patch Embedding 或 Tokenizer、Attention 或 Token Mixer、MLP、残差连接和最终分类头。
+
+二、Spikformer
+
+Spikformer 是四者中最接近传统 Vision Transformer 的结构。它先通过 SPS 模块使用多层 Conv + BN + LIF + MaxPool 生成 token，然后将空间维展平为 [T, B, N, C]。后续 SSA 模块使用 Linear 层生成 Q、K、V，并执行类似标准 Transformer 的注意力计算：
+
+    attn = (q @ k.transpose(-2, -1)) * scale
+    x = attn @ v
+
+因此 Spikformer 可以理解为对 ViT 的直接脉冲化改造。
+
+三、Spikingformer
+
+Spikingformer 更强调 spike-driven residual learning。它不像 Spikformer 长期使用 [T, B, N, C] token 表示，而是更多保留 [T, B, C, H, W] 的空间特征图形式。Attention 前才将空间维展平。
+
+它的重要特点是 LIF 通常放在 Conv 或投影层之前，例如 MLP 中先执行 LIF，再执行 1x1 Conv。这使得卷积和注意力模块更多接收脉冲化后的输入，更符合事件驱动计算方式。残差连接采用直接相加：
+
+    x = x + self.attn(x)
+    x = x + self.mlp(x)
+
+四、QKFormer
+
+QKFormer 的核心特点是分层结构和 Q-K Attention。模型包含多个 patch embedding stage，每个 stage 后接若干 Transformer block。前两阶段主要使用 Token_QK_Attention，后阶段使用 Spiking_Self_Attention。
+
+Token_QK_Attention 不显式计算完整的 QK 注意力矩阵，也不使用标准 V 分支，而是通过 Q 生成脉冲门控，再调制 K：
+
+    q = torch.sum(q, dim=3, keepdim=True)
+    attn = self.attn_lif(q)
+    x = torch.mul(attn, k)
+
+这种设计降低了注意力复杂度，也使模型更适合构建层级式 SNN Transformer。
+
+五、MaxFormer
+
+MaxFormer 可以看作是在 QKFormer 思路上的高频增强版本。它针对 SNN 中 LIF 神经元的低通滤波特性，引入 MaxPool 和 Depth-wise Convolution 来增强高频信息。
+
+在 CIFAR 版本中，模型结构大致为：
+
+    patch_embed1 -> Block_identity
+    patch_embed2 -> Block_DWC3
+    patch_embed3 -> Block_SSA
+
+早期阶段不急于使用全局注意力，而是使用 Max_Embed、DWC mixer 等局部操作保留边缘、纹理等高频特征；后期再使用 SSA 建模全局关系。mixer_hub.py 中还提供 Max_Mixer、Avg_Mixer、Mixer_DWC3/5/7、SSA_dwc 等多种混合模块。
+
+六、总体区别
+
+可以按如下关系理解四者：
+
+    Spikformer:
+        标准 Transformer 脉冲化，最接近 ViT。
+
+    Spikingformer:
+        更强调 spike-driven 残差学习，主要在空间特征图上操作。
+
+    QKFormer:
+        使用分层结构和 Q-K Attention，降低注意力复杂度。
+
+    MaxFormer:
+        在 QKFormer 基础上进一步强化高频信息，使用 MaxPool 和 DWC 替代部分早期 attention。
+
+简要总结：
+
+- Spikformer：标准 self-attention 脉冲化。
+- Spikingformer：更纯粹的 spike-driven residual Transformer。
+- QKFormer：层级式 Q-K Attention，提高效率和可扩展性。
+- MaxFormer：面向 SNN 低通问题，用 MaxPool/DWC 增强高频特征。
